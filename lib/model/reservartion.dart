@@ -1,26 +1,61 @@
+// import 'package:cloud_firestore/cloud_firestore.dart';
+
+// class Reservation {
+//   final String id;
+//   final String roomId;
+//   final String userId;
+//   final DateTime startDate;
+//   final DateTime endDate;
+//   final double totalPrice;
+//   final String status; // e.g. 'pending', 'confirmed', 'canceled'
+
+//   Reservation({
+//     required this.id,
+//     required this.roomId,
+//     required this.userId,
+//     required this.startDate,
+//     required this.endDate,
+//     required this.totalPrice,
+//     required this.status,
+//   });
+
+//   factory Reservation.fromFirestore(DocumentSnapshot doc) {
+//     final data = doc.data() as Map<String, dynamic>;
+//     final startTimestamp = data['startDate'] as Timestamp?;
+//     final endTimestamp = data['endDate'] as Timestamp?;
+
+//     return Reservation(
+//       id: doc.id,
+//       roomId: data['roomId'] ?? '',
+//       userId: data['userId'] ?? '',
+//       startDate: startTimestamp?.toDate() ?? DateTime.now(),
+//       endDate: endTimestamp?.toDate() ?? DateTime.now(),
+//       totalPrice: (data['totalPrice'] as num?)?.toDouble() ?? 0.0,
+//       status: data['status'] ?? 'pending',
+//     );
+//   }
+
+//   Map<String, dynamic> toJson() {
+//     return {
+//       'roomId': roomId,
+//       'userId': userId,
+//       'startDate': Timestamp.fromDate(startDate),
+//       'endDate': Timestamp.fromDate(endDate),
+//       'totalPrice': totalPrice,
+//       'status': status,
+//     };
+//   }
+// }
+
+// models/reservation.dart
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class Reservation {
-  /// Document ID in Firestore (auto-generated)
-  final String id;
-
-  /// The ID of the reserved room (reference to the `Room` document)
+  final String id; // ID de la reserva
   final String roomId;
-
-  /// The ID of the user who made the reservation (reference to the `UserModel` / uid)
   final String userId;
-
-  /// The start date of the reservation
   final DateTime startDate;
-
-  /// The end date of the reservation
   final DateTime endDate;
-
-  /// The total price of the reservation
-  final double totalPrice;
-
-  /// The reservation status: 'pending', 'confirmed', 'canceled', etc.
-  final String status;
 
   Reservation({
     required this.id,
@@ -28,40 +63,29 @@ class Reservation {
     required this.userId,
     required this.startDate,
     required this.endDate,
-    required this.totalPrice,
-    required this.status,
+    required double totalPrice,
+    required String status,
   });
 
-  /// Builds a `Reservation` object from a Firestore document
-  factory Reservation.fromJson(Map<String, dynamic> json, String documentId) {
-    // Parse Timestamps for the start and end dates
-    final startTimestamp = json['startDate'] as Timestamp?;
-    final endTimestamp = json['endDate'] as Timestamp?;
-
-    final start = startTimestamp?.toDate() ?? DateTime.now();
-    final end = endTimestamp?.toDate() ?? DateTime.now();
-
+  factory Reservation.fromFirestore(DocumentSnapshot doc) {
+    final data = doc.data() as Map<String, dynamic>;
     return Reservation(
-      id: documentId,
-      roomId: json['roomId'] ?? '',
-      userId: json['userId'] ?? '',
-      startDate: start,
-      endDate: end,
-      totalPrice: (json['totalPrice'] as num?)?.toDouble() ?? 0.0,
-      status: json['status'] ?? 'pending',
+      status: 'pending',
+      totalPrice: 123,
+      id: doc.id,
+      roomId: data['roomId'] ?? '',
+      userId: data['userId'] ?? '',
+      startDate: (data['startDate'] as Timestamp).toDate(),
+      endDate: (data['endDate'] as Timestamp).toDate(),
     );
   }
 
-  /// Converts a `Reservation` object to a Map for saving in Firestore
   Map<String, dynamic> toJson() {
     return {
       'roomId': roomId,
       'userId': userId,
-      // Use Timestamp.fromDate to store as Firestore Timestamps
       'startDate': Timestamp.fromDate(startDate),
       'endDate': Timestamp.fromDate(endDate),
-      'totalPrice': totalPrice,
-      'status': status,
     };
   }
 }

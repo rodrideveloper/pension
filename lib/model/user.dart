@@ -1,19 +1,13 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class UserModel {
-  /// Document ID in Firestore (usually the authenticated user's UID)
+  /// Document ID in Firestore (often the UID for an authenticated user,
+  /// but here we might auto-generate or let user choose)
   final String uid;
 
-  /// User's full name
   final String name;
-
-  /// User's email address
   final String email;
-
-  /// (Optional) user's phone number
   final String? phoneNumber;
-
-  /// When the user was created, stored as a `DateTime` in the model
   final DateTime createdAt;
 
   UserModel({
@@ -24,29 +18,25 @@ class UserModel {
     required this.createdAt,
   });
 
-  /// Builds a `UserModel` from a Firestore document
-  factory UserModel.fromJson(Map<String, dynamic> json, String documentId) {
-    // In Firestore, we typically store dates as Timestamps
-    final createdTimestamp = json['createdAt'] as Timestamp?;
-    // Convert to DateTime (default to now if null)
+  factory UserModel.fromFirestore(DocumentSnapshot doc) {
+    final data = doc.data() as Map<String, dynamic>;
+    final createdTimestamp = data['createdAt'] as Timestamp?;
     final date = createdTimestamp?.toDate() ?? DateTime.now();
 
     return UserModel(
-      uid: documentId,
-      name: json['name'] ?? '',
-      email: json['email'] ?? '',
-      phoneNumber: json['phoneNumber'] as String?,
+      uid: doc.id,
+      name: data['name'] ?? '',
+      email: data['email'] ?? '',
+      phoneNumber: data['phoneNumber'],
       createdAt: date,
     );
   }
 
-  /// Converts a `UserModel` object to a Map for saving in Firestore
   Map<String, dynamic> toJson() {
     return {
       'name': name,
       'email': email,
       'phoneNumber': phoneNumber,
-      // Use Timestamp.fromDate to store as Firestore Timestamp
       'createdAt': Timestamp.fromDate(createdAt),
     };
   }
